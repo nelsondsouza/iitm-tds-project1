@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
 # (Files/folders excluded via .dockerignore won't be copied)
-COPY . .
+COPY . /app
 # Expose the port that uvicorn will run on
 EXPOSE 8000
 
