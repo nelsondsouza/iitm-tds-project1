@@ -17,9 +17,9 @@ RUN mkdir -p /data
 WORKDIR /app
 
 # Copy application files
-COPY app.py /app
-COPY tasksA.py /app
-COPY tasksB.py /app
+COPY * /app
+# COPY tasksA.py /app
+# COPY tasksB.py /app
 
 # Install FastAPI and Uvicorn
 RUN pip install --no-cache-dir fastapi uvicorn
