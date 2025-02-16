@@ -1,28 +1,33 @@
 FROM python:3.12-slim-bookworm
 
-# Install essential system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && rm -rf /var/lib/apt/lists/*
+# Prevent Python from writing pyc files to disk and enable unbuffered logging
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Download and install uv
-ADD https://astral.sh/uv/install.sh /uv-installer.sh
-RUN chmod +x /uv-installer.sh && sh /uv-installer.sh && rm /uv-installer.sh
+# Install system dependencies (adjust if your project needs additional packages)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libjpeg-dev \
+    zlib1g-dev \
+ && rm -rf /var/lib/apt/lists/*
 
-# Ensure uv is available in the PATH
-ENV PATH="/root/.local/bin:$PATH"
-
-# ✅ Create the /data folder
-RUN mkdir -p /data
-
-# Set up the application directory
+# Set working directory
 WORKDIR /app
 
-# Copy application files
-COPY * /app
-# COPY tasksA.py /app
-# COPY tasksB.py /app
+# Upgrade pip
+RUN pip install --upgrade pip
 
-# Install FastAPI and Uvicorn
-RUN pip install --no-cache-dir fastapi uvicorn
+# Copy only the requirements file first to leverage Docker cache
+COPY requirements.txt .
 
-# Explicitly set the correct binary path and start the application
-CMD ["/root/.local/bin/uv", "run", "app.py"]
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application code
+# (Files/folders excluded via .dockerignore won't be copied)
+COPY . .
+# Expose the port that uvicorn will run on
+EXPOSE 8000
+
+# Command to run the application with uvicorn
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
